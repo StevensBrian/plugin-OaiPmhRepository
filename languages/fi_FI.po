@@ -1,0 +1,54 @@
+# Translation for the OAI-PMH Repository plugin for Omeka.
+# Copyright (C) 2011 Roy Rosenzweig Center for History and New Media
+# This file is distributed under the same license as the Omeka package.
+# 
+# Translators:
+msgid ""
+msgstr ""
+"Project-Id-Version: Omeka\n"
+"POT-Creation-Date: 2012-06-27 21:49-0500\n"
+"PO-Revision-Date: 2012-06-27 10:21+0000\n"
+"Last-Translator: Matti Lassila <matti.lassila@gmail.com>\n"
+"Language-Team: Finnish (Finland) (http://www.transifex.net/projects/p/omeka/language/fi_FI/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: fi_FI\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+
+#: config_form.php:15
+msgid "Repository name"
+msgstr "Julkaisuarkiston nimi"
+
+#: config_form.php:17
+msgid "Name for this OAI-PMH repository."
+msgstr "OAI-PMH-julkaisuarkiston nimi."
+
+#: config_form.php:20
+msgid "Namespace identifier"
+msgstr "Nimiavaruuden tunniste"
+
+#: config_form.php:22
+msgid "This will be used to form globally unique IDs for the exposed metadata items. This value is required to be a domain name you have registered.  Using other values will generate invalid identifiers."
+msgstr "Nimiavaruuden tunnistetta käytetään muodostamaan globaalisti yksilöivä tunniste teosten metatiedoille. Tunnisteen tulee olla sivuston rekisteröity verkkotunnus. Muiden tunnistemerkkijonojen käyttö luo virheellisiä teostunnisteita. "
+
+#: config_form.php:25
+msgid "Expose files"
+msgstr "Paljasta tiedostot"
+
+#: config_form.php:28
+msgid "Whether the plugin should include identifiers for the files associated with items.  This provides harvesters with direct access to files."
+msgstr "Paljasta teoksiin kuuluvien tiedostojen tunnisteet rajapinnan kautta. Tällöin haravoijilla on suora pääsy tiedostoihin."
+
+#: plugin.php:113
+msgid "OAI-PMH Repository"
+msgstr "OAI-PMH -julkaisuarkisto"
+
+#: plugin.php:114
+msgid "Harvesters can access metadata from this site at"
+msgstr "Haravoijilla on pääsy metatietoihin osoitteessa"
+
+#: plugin.php:115
+msgid "Exposes Omeka items as an OAI-PMH repository."
+msgstr "Julkaisee Omekan sisältämät teokset OAI-PMH -rajapinnan kautta."
+

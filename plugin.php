@@ -25,6 +25,7 @@ function oaipmh_add_hooks_and_filters()
     add_plugin_hook('config', 'oaipmh_repository_config');
     add_plugin_hook('uninstall', 'oaipmh_repository_uninstall');
     add_plugin_hook('admin_append_to_dashboard_secondary', 'oaipmh_repository_admin_append_to_dashboard_secondary');
+    add_plugin_hook('initialize', 'oaipmh_repository_initialize');
 }
 
 /**
@@ -108,8 +109,8 @@ function oaipmh_repository_admin_append_to_dashboard_secondary()
 {
 ?>
 <div id="oai-pmh-repository" class="info-panel">
-    <h2>OAI-PMH Repository</h2>
-    <p>Harvesters can access metadata from this site at <a href="<?php echo OAI_PMH_BASE_URL ?>"><?php echo OAI_PMH_BASE_URL ?></a></p>.
+    <h2><?php echo __('OAI-PMH Repository'); ?></h2>
+    <p><?php echo __('Harvesters can access metadata from this site at'); ?> <a href="<?php echo OAI_PMH_BASE_URL ?>"><?php echo OAI_PMH_BASE_URL ?></a></p>.
 </div>
 <?php
 }
@@ -125,4 +126,14 @@ function oaipmh_repository_get_server_name()
         $name = 'default.must.change';
     }
     return $name;
+}
+
+/** 
+ * Prepares plugin for initialization.
+ * 
+ * @return void
+ */
+function oaipmh_repository_initialize()
+{
+    add_translation_source(dirname(__FILE__) . '/languages');
 }
