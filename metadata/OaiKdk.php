@@ -66,49 +66,51 @@ class OaiPmhRepository_Metadata_OaiKdk extends OaiPmhRepository_Metadata_Abstrac
                                  'format', 'source', 'language',
                                  'relation', 'coverage', 'rights' );
 
-        /* DC Terds
-         * specified by the oai_dc XML schema
+        /* DC Terms specified in http://dublincore.org/schemas/xmls/qdc/dcterms.xsd
+         * Array maps element names to labels used in DC Extented plugin
          */
-        $dcTermElementNames = array( 'alternative', 
-                                     'tableOfContents', 
-                                     'abstract', 
-                                     'created',
-                                     'valid',
-                                     'available',
-                                     'issued',
-                                     'modified',
-                                     'dateAccepted',
-                                     'dateCopyrighted',
-                                     'dateSubmitted',
-                                     'extent',
-                                     'medium',
-                                     'isVersionOf',
-                                     'hasVersion',
-                                     'isReplacedBy',
-                                     'replaces',
-                                     'isRequiredBy',
-                                     'requires',
-                                     'isPartOf',
-                                     'hasPart',
-                                     'isReferencedBy',
-                                     'references',
-                                     'isFormatOf',
-                                     'hasFormat',
-                                     'conformsTo',
-                                     'spatial',
-                                     'temporal',
-                                     'audience',
-                                     'accuralMethod',
-                                     'accuralPeriodicity',
-                                     'accuralPolicy',
-                                     'instructionalMethod',
-                                     'provenance',
-                                     'rightsHolder',
-                                     'mediator',
-                                     'educationLevel',
-                                     'accessRights',
-                                     'license',
-                                     'bibliographicCitation');
+        
+        $dcTermElements = array(
+                 'alternative' => 'Alternative Title', 
+                 'tableOfContents' => 'Table Of Contents', 
+                 'abstract' => 'Abstract', 
+                 'created' => 'Date Created',
+                 'valid' => 'Date Valid',
+                 'available' => 'Date Available',
+                 'issued' => 'Date Issued',
+                 'modified' => 'Date Modified',
+                 'dateAccepted' => 'Date Accepted',
+                 'dateCopyrighted' => 'Date Copyrighted',
+                 'dateSubmitted' => 'Date Submitted',
+                 'extent' => 'Extent',
+                 'medium' => 'Medium',
+                 'isVersionOf' => 'Is Version Of',
+                 'hasVersion' => 'Has Version',
+                 'isReplacedBy' => 'Is Replaced By',
+                 'replaces' => 'Replaces',
+                 'isRequiredBy' => 'Is Required By',
+                 'requires' => 'Requires',
+                 'isPartOf' => 'Is Part Of',
+                 'hasPart' => 'Has Part',
+                 'isReferencedBy' => 'Is Referenced By',
+                 'references' => 'References',
+                 'isFormatOf' => 'Is Format Of',
+                 'hasFormat' => 'Has Format',
+                 'conformsTo' => 'Conforms To',
+                 'spatial' => 'Spatial Coverage',
+                 'temporal' => 'Temporal Coverage',
+                 'audience' => 'Audience',
+                 'accuralMethod' => 'Accrual Method',
+                 'accuralPeriodicity' => 'Accrual Periodicity',
+                 'accuralPolicy' => 'Accrual Policy',
+                 'instructionalMethod' => 'Instructional Method',
+                 'provenance' => 'Provenance',
+                 'rightsHolder' => 'Rights Holder',
+                 'mediator' => 'Mediator',
+                 'educationLevel' => 'Audience Education Level',
+                 'accessRights' => 'Access Rights',
+                 'license' => 'License',
+                 'bibliographicCitation' => 'Bibliographic Citation');
 
         /* Must create elements using createElement to make DOM allow a
          * top-level xmlns declaration instead of wasteful and non-
@@ -127,22 +129,6 @@ class OaiPmhRepository_Metadata_OaiKdk extends OaiPmhRepository_Metadata_Abstrac
                         'dc:'.$elementName, $elementText->text);
                 }
             }
-            // Append the browse URI to all results
-            if($elementName == 'identifier') 
-            {
-                
-                // Also append an identifier for each file
-                if(get_option('oaipmh_repository_expose_files')) {
-                    $files = $this->item->getFiles();
-                    foreach($files as $file) 
-                    {
-                        $this->appendNewElement($oai_dc, 
-                            'dc:identifier', $file->getWebPath('archive'));
-                    }
-                }
-            }
-
-            
         }
         /* 
          * Retrieve subject headings which are saved as tags.
@@ -156,27 +142,27 @@ class OaiPmhRepository_Metadata_OaiKdk extends OaiPmhRepository_Metadata_Abstrac
                             'dc:subject', $tag->name, 'dcterms:DDC');
         }
 
-        /* Handle UDC entries separately */
+        /* Handle UDC/YKL entries separately */
 
         $dcSubjects = $this->item->getElementTextsByElementNameAndSetName(
                 'Subject', 'Dublin Core');
             foreach($dcSubjects as $dcSubject)
             {
-                if (is_numeric(substr($dcSubject->text, 0, 1)))
+                if (is_numeric(substr(trim($dcSubject->text), 0, 1)))
                 {
                     $this->appendNewElement($oai_dc, 
-                        'dc:subject', $dcSubject->text, 'dcterms:UDC');
+                        'dc:subject', trim($dcSubject->text), 'dcterms:UDC');
                 }
                 else {
                     
                     if ($dcSubject->text != ' ') {
                     $this->appendNewElement($oai_dc, 
-                        'dc:subject', $dcSubject->text);
+                        'dc:subject', trim($dcSubject->text));
                     }
                 }
             }
 
-        /* Handle URNs */
+        /* Handle URNs and local URIs. This is for URN resolving in NLF*/
 
         $dcIdentifiers = $this->item->getElementTextsByElementNameAndSetName(
                 'Identifier', 'Dublin Core');
@@ -184,35 +170,29 @@ class OaiPmhRepository_Metadata_OaiKdk extends OaiPmhRepository_Metadata_Abstrac
             {
                 if (substr($dcIdentifier->text, 0, 3) == 'URN') {
                    $this->appendNewElement($oai_dc, 
-                    'dc:identifier', $dcIdentifier->text, 'URI'); 
-                } else {
+                    'dc:identifier', trim($dcIdentifier->text), 'URI'); 
+                } 
 
                 $this->appendNewElement($oai_dc, 
-                    'dc:identifier', abs_item_uri($this->item));
-                }
+                    'dc:identifier', abs_item_uri($this->item), 'coolUri');
+                
             }
 
 
 
         /* Create metadata entries for dc:terms
          */
-        foreach($dcTermElementNames as $elementName)
+        foreach($dcTermElements as $key => $value)
         {   
-            $upperName = Inflector::camelize($elementName);
-
-            /* Handle nonstandard DC element names used in DC Extended module */
-
-            if ($upperName = 'alternative') {
-                $upperName = 'Alternative Title';
-            }
+            
             $dcElements = $this->item->getElementTextsByElementNameAndSetName(
-                $upperName, 'Dublin Core');
+                $dcTermElements[$key], 'Dublin Core');
             foreach($dcElements as $elementText)
             {
                 if ($elementText->text != ' ')
                 {
                     $this->appendNewElement($oai_dc, 
-                        'dcterms:'.$elementName, $elementText->text);
+                        'dcterms:' . $key, $elementText->text);
                 }
             }
         }
