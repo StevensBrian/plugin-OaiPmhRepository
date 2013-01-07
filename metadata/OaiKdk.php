@@ -7,7 +7,7 @@
  * @license http://www.gnu.org/licenses/gpl-3.0.txt
  */
 
-require_once HELPERS;
+/**require_once HELPERS;**/
 
 /**
  * Class implmenting metadata output for the required oai_dc metadata format.
@@ -119,8 +119,8 @@ class OaiPmhRepository_Metadata_OaiKdk extends OaiPmhRepository_Metadata_Abstrac
         foreach($dcElementNames as $elementName)
         {   
             $upperName = Inflector::camelize($elementName);
-            $dcElements = $this->item->getElementTextsByElementNameAndSetName(
-                $upperName, 'Dublin Core');
+            $dcElements = $this->item->getElementTexts(
+                 'Dublin Core',$upperName);
             foreach($dcElements as $elementText)
             {
                 if ($elementText->text != ' ')
@@ -144,8 +144,8 @@ class OaiPmhRepository_Metadata_OaiKdk extends OaiPmhRepository_Metadata_Abstrac
 
         /* Handle UDC/YKL entries separately */
 
-        $dcSubjects = $this->item->getElementTextsByElementNameAndSetName(
-                'Subject', 'Dublin Core');
+        $dcSubjects = $this->item->getElementTexts(
+                'Dublin Core','Subject');
             foreach($dcSubjects as $dcSubject)
             {
                 if (is_numeric(substr(trim($dcSubject->text), 0, 1)))
@@ -164,8 +164,8 @@ class OaiPmhRepository_Metadata_OaiKdk extends OaiPmhRepository_Metadata_Abstrac
 
         /* Handle URNs and local URIs. This is for URN resolving in NLF*/
 
-        $dcIdentifiers = $this->item->getElementTextsByElementNameAndSetName(
-                'Identifier', 'Dublin Core');
+        $dcIdentifiers = $this->item->getElementTexts(
+                'Dublin Core','Identifier');
             foreach($dcIdentifiers as $dcIdentifier)
             {
                 if (substr($dcIdentifier->text, 0, 3) == 'URN') {
@@ -174,7 +174,7 @@ class OaiPmhRepository_Metadata_OaiKdk extends OaiPmhRepository_Metadata_Abstrac
                 } 
 
                 $this->appendNewElement($oai_dc, 
-                    'dc:identifier', abs_item_uri($this->item), 'coolUri');
+                    'dc:identifier', record_url($this->item), 'coolUri');
                 
             }
 
@@ -185,8 +185,8 @@ class OaiPmhRepository_Metadata_OaiKdk extends OaiPmhRepository_Metadata_Abstrac
         foreach($dcTermElements as $key => $value)
         {   
             
-            $dcElements = $this->item->getElementTextsByElementNameAndSetName(
-                $dcTermElements[$key], 'Dublin Core');
+            $dcElements = $this->item->getElementTexts(
+                'Dublin Core',$dcTermElements[$key]);
             foreach($dcElements as $elementText)
             {
                 if ($elementText->text != ' ')
