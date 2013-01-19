@@ -63,8 +63,8 @@ class OaiPmhRepository_Metadata_OaiKdk extends OaiPmhRepository_Metadata_Abstrac
          */
         $dcElementNames = array( 'title', 'creator', 'description',
                                  'publisher', 'contributor', 'date', 'type',
-                                 'format', 'source', 'language',
-                                 'relation', 'coverage', 'rights' );
+                                 'format', 'source','relation', 'coverage', 
+                                 'rights' );
 
         /* DC Terms specified in http://dublincore.org/schemas/xmls/qdc/dcterms.xsd
          * Array maps element names to labels used in DC Extented plugin
@@ -161,7 +161,62 @@ class OaiPmhRepository_Metadata_OaiKdk extends OaiPmhRepository_Metadata_Abstrac
                     }
                 }
             }
+            
+        /* Handle language entries */
 
+        $dcLanguages = $this->item->getElementTexts(
+                'Dublin Core','Language');
+            
+            foreach($dcLanguages as $dcLanguage)
+            {
+                // If language code is exactly two characters long
+                // it is probably standard ISO639 code and we'll use
+                // it as it is.
+                
+                $language = $dcLanguage->text;
+                
+                if (strlen($language) != 2) 
+                {
+                
+                    switch($dcLanguage->text)
+                    {
+                        case 'suomi':
+                            $language = 'fi';
+                            break;
+                        case 'englanti':
+                            $language = 'en';
+                            break;
+                        case 'ruotsi':
+                            $language = 'sv';
+                        case 'espanja':
+                            $language = 'es';
+                        case 'hollanti':
+                            $language = 'nl';
+                        case 'italia':
+                            $language = 'it';
+                        case 'latina':
+                            $language = 'la';
+                        case 'venäjä':
+                            $language = 'ru';
+                        case 'ranska':
+                            $language = 'fr';
+                        case 'saksa':
+                            $language = 'de';
+                        case 'viro':
+                            $language = 'et';
+                    
+                        default:
+                            $language = 'fi';
+                    }
+                }
+  
+                    $this->appendNewElement($oai_dc, 
+                        'dc:language', trim($language));
+               
+            }
+        
+        
+        
         /* Handle URNs and local URIs. This is for URN resolving in NLF*/
 
         $dcIdentifiers = $this->item->getElementTexts(
