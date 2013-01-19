@@ -236,11 +236,10 @@ class OaiPmhRepository_Metadata_OaiKdk extends OaiPmhRepository_Metadata_Abstrac
                    $this->appendNewElement($oai_dc, 
                     'dc:identifier', trim($dcIdentifier->text), 'URI'); 
                 } 
-
-                $this->appendNewElement($oai_dc, 
-                    'dc:identifier', absolute_url(record_url($this->item)), 'coolUri');
                 
             }
+         $this->appendNewElement($oai_dc, 
+                    'dc:identifier', absolute_url(record_url($this->item)), 'coolUri');
 
         /* Handle itemtype if empty in metadata */
         
