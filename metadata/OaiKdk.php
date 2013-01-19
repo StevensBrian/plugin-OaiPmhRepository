@@ -188,22 +188,31 @@ class OaiPmhRepository_Metadata_OaiKdk extends OaiPmhRepository_Metadata_Abstrac
                             break;
                         case 'ruotsi':
                             $itemtype = 'sv';
+                            break;
                         case 'espanja':
                             $itemtype = 'es';
+                            break;
                         case 'hollanti':
                             $itemtype = 'nl';
+                            break;
                         case 'italia':
                             $itemtype = 'it';
+                            break;
                         case 'latina':
                             $itemtype = 'la';
+                            break;
                         case 'venäjä':
                             $itemtype = 'ru';
+                            break;
                         case 'ranska':
                             $itemtype = 'fr';
+                            break;
                         case 'saksa':
                             $itemtype = 'de';
+                            break;
                         case 'viro':
                             $itemtype = 'et';
+                            break;
                     
                         default:
                             $itemtype = 'fi';
@@ -258,17 +267,23 @@ class OaiPmhRepository_Metadata_OaiKdk extends OaiPmhRepository_Metadata_Abstrac
                             $itemtype = 'Image';
                             break;
                         case 'Artikkeli':
+                            break;
                             $itemtype = 'Text';
                         case 'Artikkeliviite':
+                            break;
                             $itemtype = 'Text';
                         case 'Website':
                             $itemtype = 'Text';
+                            break;
                         case 'Linkki':
                             $itemtype = 'Text';
+                            break;
                         case 'Kirje':
                             $itemtype = 'Text';
+                            break;
                         case 'Käsikirjoitus':
                             $itemtype = 'Text';
+                            break;
                     
                         default:
                             $itemtype = 'Text';
