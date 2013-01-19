@@ -173,54 +173,54 @@ class OaiPmhRepository_Metadata_OaiKdk extends OaiPmhRepository_Metadata_Abstrac
                 // it is probably standard ISO639 code and we'll use
                 // it as it is.
                 
-                $itemtype = $dcLanguage->text;
+                $language= $dcLanguage->text;
                 
-                if (strlen($itemtype) != 2) 
+                if (strlen($language) != 2) 
                 {
                 
                     switch($dcLanguage->text)
                     {
                         case 'suomi':
-                            $itemtype = 'fi';
+                            $language = 'fi';
                             break;
                         case 'englanti':
-                            $itemtype = 'en';
+                            $language = 'en';
                             break;
                         case 'ruotsi':
-                            $itemtype = 'sv';
+                            $language = 'sv';
                             break;
                         case 'espanja':
-                            $itemtype = 'es';
+                            $language = 'es';
                             break;
                         case 'hollanti':
-                            $itemtype = 'nl';
+                            $language = 'nl';
                             break;
                         case 'italia':
-                            $itemtype = 'it';
+                            $language = 'it';
                             break;
                         case 'latina':
-                            $itemtype = 'la';
+                            $language = 'la';
                             break;
                         case 'venäjä':
-                            $itemtype = 'ru';
+                            $language = 'ru';
                             break;
                         case 'ranska':
-                            $itemtype = 'fr';
+                            $language = 'fr';
                             break;
                         case 'saksa':
-                            $itemtype = 'de';
+                            $language = 'de';
                             break;
                         case 'viro':
-                            $itemtype = 'et';
+                            $language = 'et';
                             break;
                     
                         default:
-                            $itemtype = 'fi';
+                            $language = 'fi';
                     }
                 }
   
                     $this->appendNewElement($oai_dc, 
-                        'dc:language', trim($itemtype));
+                        'dc:language', trim($language));
                
             }
         
@@ -246,53 +246,27 @@ class OaiPmhRepository_Metadata_OaiKdk extends OaiPmhRepository_Metadata_Abstrac
         
         $dcTypes = $this->item->getElementTexts('Dublin Core', 'Type');
         
-        foreach($dcTypes as $dcType)
-        {
-            
-            if($dcType->text)
-            {
-                $itemtype = $dcType->text;    
-            }
-            else
-            {
-                $itemtype = $this->item->getItemType();   
-            }
-            
-            switch($itemtype)
-                    {
-                        case 'Document':
-                            $itemtype = 'Text';
-                            break;
-                        case 'Still Image':
-                            $itemtype = 'Image';
-                            break;
-                        case 'Artikkeli':
-                            break;
-                            $itemtype = 'Text';
-                        case 'Artikkeliviite':
-                            break;
-                            $itemtype = 'Text';
-                        case 'Website':
-                            $itemtype = 'Text';
-                            break;
-                        case 'Linkki':
-                            $itemtype = 'Text';
-                            break;
-                        case 'Kirje':
-                            $itemtype = 'Text';
-                            break;
-                        case 'Käsikirjoitus':
-                            $itemtype = 'Text';
-                            break;
-                    
-                        default:
-                            $itemtype = 'Text';
-                    }
-            
-            
-            
-            $this->appendNewElement($oai_dc, 
-                            'dc:type', trim($itemtype)); 
+         if(empty($dcTypes))
+             {
+                 $itemtype = $this->item->getItemType();
+                 $this->appendNewElement($oai_dc, 
+                            'dc:type', $this->translateItemType(strtolower(trim($itemtype)))); 
+                 
+             }
+        else
+        {   
+         foreach($dcTypes as $dcType)
+         {
+                 if($dcType->text)
+                 {
+                     $itemtype = $dcType->text;    
+                 }
+         
+         $this->appendNewElement($oai_dc, 
+                            'dc:type', $this->translateItemType(strtolower(trim($itemtype)))); 
+         }
+           
+    
         }
             
         
@@ -372,4 +346,39 @@ class OaiPmhRepository_Metadata_OaiKdk extends OaiPmhRepository_Metadata_Abstrac
         $parent->appendChild($newElement);
         return $newElement;
      }
+     
+     protected function translateItemType($itemtype)
+     {
+         switch($itemtype)
+                    {
+                        case 'document':
+                            $itemtype = 'Text';
+                            break;
+                        case 'still image':
+                            $itemtype = 'Image';
+                            break;
+                        case 'artikkeli':
+                            break;
+                            $itemtype = 'Text';
+                        case 'artikkeliviite':
+                            break;
+                            $itemtype = 'Text';
+                        case 'website':
+                            $itemtype = 'Text';
+                            break;
+                        case 'linkki':
+                            $itemtype = 'Text';
+                            break;
+                        case 'kirje':
+                            $itemtype = 'Text';
+                            break;
+                        case 'käsikirjoitus':
+                            $itemtype = 'Text';
+                            break;
+                        default:
+                           $itemtype = $itemtype;
+                    }
+            return $itemtype;
+    }
 }
+
