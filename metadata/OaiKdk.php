@@ -238,7 +238,7 @@ class OaiPmhRepository_Metadata_OaiKdk extends OaiPmhRepository_Metadata_Abstrac
                 } 
 
                 $this->appendNewElement($oai_dc, 
-                    'dc:identifier', record_url($this->item), 'coolUri');
+                    'dc:identifier', absolute_url(record_url($this->item)), 'coolUri');
                 
             }
 
