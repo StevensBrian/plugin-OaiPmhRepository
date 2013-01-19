@@ -284,11 +284,17 @@ class OaiPmhRepository_ResponseGenerator extends OaiPmhRepository_OaiXmlGenerato
             return;
         }
         
+        if (!$metadataPrefix) {
+            $this->throwError(self::OAI_ERR_BAD_ARGUMENT, 'Missing required metadataPrefix argument');
+            return;
+        }
+        
         $item = get_db()->getTable('Item')->find($itemId);
 
         if(!$item) {
             $this->throwError(self::OAI_ERR_ID_DOES_NOT_EXIST);
         }
+        
 
         if(!$this->error) {
             $getRecord = $this->document->createElement('GetRecord');
@@ -432,6 +438,10 @@ class OaiPmhRepository_ResponseGenerator extends OaiPmhRepository_OaiXmlGenerato
         if($until) {
             $select->where("$alias.modified <= ? OR $alias.added <= ?", $until);
             $select->group("$alias.id");
+        }
+        if (!$metadataPrefix) {
+            $this->throwError(self::OAI_ERR_BAD_ARGUMENT, 'Missing required metadataPrefix argument');
+            return;
         }
         
         // Total number of rows that would be returned
