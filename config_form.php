@@ -27,3 +27,7 @@
         array('checked' => '1', 'unChecked' => '0'));?>
     <p class="explanation"><?php echo __('Whether the plugin should include identifiers for the files associated with items.  This provides harvesters with direct access to files.'); ?></p>
 </div>
+<div class="field">
+    <label for="oaipmh_repository_expose_files"><?php echo __('OAI-PMH Repository'); ?></label>
+    <p class="explanation"><?php echo __('Harvesters can access metadata from this site at'); ?> <a href="<?php echo OAI_PMH_BASE_URL ?>"><?php echo OAI_PMH_BASE_URL ?></a></p>.
+</div>
