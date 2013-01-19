@@ -62,7 +62,7 @@ class OaiPmhRepository_Metadata_OaiKdk extends OaiPmhRepository_Metadata_Abstrac
          * for type includement.
          */
         $dcElementNames = array( 'title', 'creator', 'description',
-                                 'publisher', 'contributor', 'date', 'type',
+                                 'publisher', 'contributor', 'date',
                                  'format', 'source','relation', 'coverage', 
                                  'rights' );
 
@@ -162,7 +162,7 @@ class OaiPmhRepository_Metadata_OaiKdk extends OaiPmhRepository_Metadata_Abstrac
                 }
             }
             
-        /* Handle language entries */
+        /* Handle language entries as used in some Finnish Omeka installations */
 
         $dcLanguages = $this->item->getElementTexts(
                 'Dublin Core','Language');
@@ -173,45 +173,45 @@ class OaiPmhRepository_Metadata_OaiKdk extends OaiPmhRepository_Metadata_Abstrac
                 // it is probably standard ISO639 code and we'll use
                 // it as it is.
                 
-                $language = $dcLanguage->text;
+                $itemtype = $dcLanguage->text;
                 
-                if (strlen($language) != 2) 
+                if (strlen($itemtype) != 2) 
                 {
                 
                     switch($dcLanguage->text)
                     {
                         case 'suomi':
-                            $language = 'fi';
+                            $itemtype = 'fi';
                             break;
                         case 'englanti':
-                            $language = 'en';
+                            $itemtype = 'en';
                             break;
                         case 'ruotsi':
-                            $language = 'sv';
+                            $itemtype = 'sv';
                         case 'espanja':
-                            $language = 'es';
+                            $itemtype = 'es';
                         case 'hollanti':
-                            $language = 'nl';
+                            $itemtype = 'nl';
                         case 'italia':
-                            $language = 'it';
+                            $itemtype = 'it';
                         case 'latina':
-                            $language = 'la';
+                            $itemtype = 'la';
                         case 'venäjä':
-                            $language = 'ru';
+                            $itemtype = 'ru';
                         case 'ranska':
-                            $language = 'fr';
+                            $itemtype = 'fr';
                         case 'saksa':
-                            $language = 'de';
+                            $itemtype = 'de';
                         case 'viro':
-                            $language = 'et';
+                            $itemtype = 'et';
                     
                         default:
-                            $language = 'fi';
+                            $itemtype = 'fi';
                     }
                 }
   
                     $this->appendNewElement($oai_dc, 
-                        'dc:language', trim($language));
+                        'dc:language', trim($itemtype));
                
             }
         
@@ -233,7 +233,54 @@ class OaiPmhRepository_Metadata_OaiKdk extends OaiPmhRepository_Metadata_Abstrac
                 
             }
 
-
+        /* Handle itemtype if empty in metadata */
+        
+        $dcTypes = $this->item->getElementTexts('Dublin Core', 'Type');
+        
+        foreach($dcTypes as $dcType)
+        {
+            
+            if($dcType->text)
+            {
+                $itemtype = $dcType->text;    
+            }
+            else
+            {
+                $itemtype = $this->item->getItemType();   
+            }
+            
+            switch($itemtype)
+                    {
+                        case 'Document':
+                            $itemtype = 'Text';
+                            break;
+                        case 'Still Image':
+                            $itemtype = 'Image';
+                            break;
+                        case 'Artikkeli':
+                            $itemtype = 'Text';
+                        case 'Artikkeliviite':
+                            $itemtype = 'Text';
+                        case 'Website':
+                            $itemtype = 'Text';
+                        case 'Linkki':
+                            $itemtype = 'Text';
+                        case 'Kirje':
+                            $itemtype = 'Text';
+                        case 'Käsikirjoitus':
+                            $itemtype = 'Text';
+                    
+                        default:
+                            $itemtype = 'Text';
+                    }
+            
+            
+            
+            $this->appendNewElement($oai_dc, 
+                            'dc:type', trim($itemtype)); 
+        }
+            
+        
 
         /* Create metadata entries for dc:terms
          */
