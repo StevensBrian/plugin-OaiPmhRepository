@@ -75,21 +75,23 @@ class OaiPmhRepository_Metadata_Mets extends OaiPmhRepository_Metadata_Abstract
             }
         }
 
-        if ($this->item->fileCount()) {
+        if (metadata($this->item,'has files')) {
             $fileSection = $this->appendNewElement($mets, 'fileSec');
             $fileGroup = $this->appendNewElement($fileSection, 'fileGrp');
             $fileGroup->setAttribute('USE', 'ORIGINAL');
             foreach ($this->item->getFiles() as $file) {
                 $fileElement = $this->appendNewElement($fileGroup, 'file');
                 $fileElement->setAttribute('ID', 'file-' . $file->id);
-                $fileElement->setAttribute('MIMETYPE', $file->mime_browser);
+                $fileElement->setAttribute('MIMETYPE', $file->mime_type);
                 $fileElement->setAttribute('CHECKSUM', $file->authentication);
                 $fileElement->setAttribute('CHECKSUMTYPE', 'MD5');
 
                 $location = $this->appendNewElement($fileElement, 'FLocat');
                 $location->setAttribute('LOCTYPE', 'URL');
                 $location->setAttribute('xlink:type', 'simple');
-                $location->setAttribute('xlink:href', $file->getWebPath('archive'));
+                $location->setAttribute('xlink:title', $file->original_filename);
+                $location->setAttribute('xlink:href',$file->getWebPath('original'));
+              
                 release_object($file);
             }
         }

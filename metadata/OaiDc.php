@@ -77,7 +77,7 @@ class OaiPmhRepository_Metadata_OaiDc extends OaiPmhRepository_Metadata_Abstract
             if($elementName == 'identifier') 
             {
                 $this->appendNewElement($oai_dc, 
-                    'dc:identifier', abs_item_uri($this->item));
+                    'dc:identifier', record_url($this->item,'show',true));
                 
                 // Also append an identifier for each file
                 if(get_option('oaipmh_repository_expose_files')) {
@@ -85,7 +85,7 @@ class OaiPmhRepository_Metadata_OaiDc extends OaiPmhRepository_Metadata_Abstract
                     foreach($files as $file) 
                     {
                         $this->appendNewElement($oai_dc, 
-                            'dc:identifier', $file->getWebPath('archive'));
+                            'dc:identifier', $file->getWebPath('original'));
                     }
                 }
             }

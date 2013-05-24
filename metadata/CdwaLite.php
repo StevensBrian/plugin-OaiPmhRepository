@@ -63,8 +63,9 @@ class OaiPmhRepository_Metadata_CdwaLite extends OaiPmhRepository_Metadata_Abstr
         $objectWorkTypeWrap = $this->appendNewElement($descriptive, 'cdwalite:objectWorkTypeWrap');
         if(count($types) == 0) $types[] = 'Unknown';
         foreach($types as $type)
-        {
-            $this->appendNewElement($objectWorkTypeWrap, 'cdwalite:objectWorkType', $type->text);
+        {  
+            $this->appendNewElement($objectWorkTypeWrap, 'cdwalite:objectWorkTypeWrap', ($type == 'Unknown')? $type: $type->text );
+
         }
         
         /* Title => titleWrap->titleSet->title
@@ -199,7 +200,7 @@ class OaiPmhRepository_Metadata_CdwaLite extends OaiPmhRepository_Metadata_Abstr
                 {
                     $resourceSet = $this->appendNewElement($resourceWrap, 'cdwalite:resourceSet');
                     $this->appendNewElement($resourceSet, 
-                        'cdwalite:linkResource', $file->getWebPath('archive'));
+                        'cdwalite:linkResource',$file->getWebPath('original'));
                 }
             }
         }

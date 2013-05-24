@@ -142,7 +142,7 @@ class OaiPmhRepository_Metadata_Mods extends OaiPmhRepository_Metadata_Abstract
         }
 
         $location = $this->appendNewElement($mods, 'location');
-        $url = $this->appendNewElement($location, 'url', record_url($this->item));
+        $url = $this->appendNewElement($location, 'url', record_url($this->item,'show',true));
         $url->setAttribute('usage', 'primary display');
 
         $publishers = $this->item->getElementTexts('Dublin Core', 'Publisher');
