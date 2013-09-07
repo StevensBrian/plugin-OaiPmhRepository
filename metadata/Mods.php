@@ -7,7 +7,6 @@
  * @license http://www.gnu.org/licenses/gpl-3.0.txt
  */
 
-/**require_once HELPERS;**/
 
 /**
  * Class implmenting MODS metadata output format.
@@ -49,14 +48,14 @@ class OaiPmhRepository_Metadata_Mods extends OaiPmhRepository_Metadata_Abstract
         $mods->setAttribute('xsi:schemaLocation', self::METADATA_NAMESPACE
             .' '.self::METADATA_SCHEMA);
             
-        $titles = $this->item->getElementTexts('Dublin Core', 'Title');
+        $titles = $this->item->getElementTexts('Dublin Core','Title');
         foreach($titles as $title)
         {
             $titleInfo = $this->appendNewElement($mods, 'titleInfo');
             $this->appendNewElement($titleInfo, 'title', $title->text);
         }
         
-        $creators = $this->item->getElementTexts('Dublin Core', 'Creator');
+        $creators = $this->item->getElementTexts('Dublin Core','Creator');
         foreach($creators as $creator)
         {
             $name = $this->appendNewElement($mods, 'name');
@@ -66,7 +65,7 @@ class OaiPmhRepository_Metadata_Mods extends OaiPmhRepository_Metadata_Abstract
             $roleTerm->setAttribute('type', 'text');
         }
         
-        $contributors = $this->item->getElementTexts('Dublin Core', 'Contributor');
+        $contributors = $this->item->getElementTexts('Dublin Core','Contributor');
         foreach($contributors as $contributor)
         {
             $name = $this->appendNewElement($mods, 'name');
@@ -76,27 +75,27 @@ class OaiPmhRepository_Metadata_Mods extends OaiPmhRepository_Metadata_Abstract
             $roleTerm->setAttribute('type', 'text');
         }
         
-        $subjects = $this->item->getElementTexts('Dublin Core', 'Subject');
+        $subjects = $this->item->getElementTexts('Dublin Core','Subject');
         foreach($subjects as $subject)
         {
             $subjectTag = $this->appendNewElement($mods, 'subject');
             $this->appendNewElement($subjectTag, 'topic', $subject->text);
         }
         
-        $descriptions = $this->item->getElementTexts('Dublin Core', 'Description');
+        $descriptions = $this->item->getElementTexts('Dublin Core','Description');
         foreach($descriptions as $description)
         {
             $this->appendNewElement($mods, 'note', $description->text);
         }
         
-        $formats = $this->item->getElementTexts('Dublin Core', 'Format');
+        $formats = $this->item->getElementTexts('Dublin Core','Format');
         foreach($formats as $format)
         {
             $physicalDescription = $this->appendNewElement($mods, 'physicalDescription');
             $this->appendNewElement($physicalDescription, 'form', $format->text);
         }
         
-        $languages = $this->item->getElementTexts('Dublin Core', 'Language');
+        $languages = $this->item->getElementTexts('Dublin Core','Language');
         foreach($languages as $language)
         {
             $languageElement = $this->appendNewElement($mods, 'language');
@@ -104,20 +103,20 @@ class OaiPmhRepository_Metadata_Mods extends OaiPmhRepository_Metadata_Abstract
             $languageTerm->setAttribute('type', 'text');
         }
         
-        $rights = $this->item->getElementTexts('Dublin Core', 'Rights');
+        $rights = $this->item->getElementTexts('Dublin Core','Rights');
         foreach($rights as $right)
         {
             $this->appendNewElement($mods, 'accessCondition', $right->text);
         }
 
-        $types = $this->item->getElementTexts('Dublin Core', 'Type');
+        $types = $this->item->getElementTexts('Dublin Core','Type');
         foreach ($types as $type)
         {
             $this->appendNewElement($mods, 'genre', $type->text);
         }
 
 
-        $identifiers = $this->item->getElementTexts('Dublin Core', 'Identifier');
+        $identifiers = $this->item->getElementTexts('Dublin Core','Identifier');
         foreach ($identifiers as $identifier)
         {
             $text = $identifier->text;
@@ -129,13 +128,13 @@ class OaiPmhRepository_Metadata_Mods extends OaiPmhRepository_Metadata_Abstract
             }
         }
 
-        $sources = $this->item->getElementTexts('Dublin Core', 'Source');
+        $sources = $this->item->getElementTexts('Dublin Core','Source');
         foreach ($sources as $source)
         {
             $this->_addRelatedItem($mods, $source->text, true);
         }
 
-        $relations = $this->item->getElementTexts('Dublin Core', 'Relation');
+        $relations = $this->item->getElementTexts('Dublin Core','Relation');
         foreach ($relations as $relation)
         {
             $this->_addRelatedItem($mods, $relation->text);
@@ -145,8 +144,8 @@ class OaiPmhRepository_Metadata_Mods extends OaiPmhRepository_Metadata_Abstract
         $url = $this->appendNewElement($location, 'url', record_url($this->item,'show',true));
         $url->setAttribute('usage', 'primary display');
 
-        $publishers = $this->item->getElementTexts('Dublin Core', 'Publisher');
-        $dates = $this->item->getElementTexts('Dublin Core', 'Date');
+        $publishers = $this->item->getElementTexts('Dublin Core','Publisher');
+        $dates = $this->item->getElementTexts('Dublin Core','Date');
 
         // Empty originInfo sections are illegal
         if(count($publishers) + count($dates) > 0) 

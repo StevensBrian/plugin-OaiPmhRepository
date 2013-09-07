@@ -59,9 +59,10 @@ class OaiPmhRepository_Metadata_CdwaLite extends OaiPmhRepository_Metadata_Abstr
         /* Type => objectWorkTypeWrap->objectWorkType 
          * Required.  Fill with 'Unknown' if omitted.
          */
-        $types = $this->item->getElementTexts('Dublin Core', 'Type');
+        $types = $this->item->getElementTexts('Dublin Core','Type');
         $objectWorkTypeWrap = $this->appendNewElement($descriptive, 'cdwalite:objectWorkTypeWrap');
-        if(count($types) == 0) $types[] = 'Unknown';
+        //print_r($objectWorkTypeWrap);
+        if(count($types) == 0) $types[] = 'Unknown'; 
         foreach($types as $type)
         {  
             $this->appendNewElement($objectWorkTypeWrap, 'cdwalite:objectWorkTypeWrap', ($type == 'Unknown')? $type: $type->text );
@@ -71,7 +72,7 @@ class OaiPmhRepository_Metadata_CdwaLite extends OaiPmhRepository_Metadata_Abstr
         /* Title => titleWrap->titleSet->title
          * Required.  Fill with 'Unknown' if omitted.
          */        
-        $titles = $this->item->getElementTexts('Dublin Core', 'Title');
+        $titles = $this->item->getElementTexts('Dublin Core','Title');
         $titleWrap = $this->appendNewElement($descriptive, 'cdwalite:titleWrap');
         if(count($types) == 0) $types[] = 'Unknown';
         foreach($titles as $title)
