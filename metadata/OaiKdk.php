@@ -138,7 +138,8 @@ class OaiPmhRepository_Metadata_OaiKdk extends OaiPmhRepository_Metadata_Abstrac
                 'Dublin Core','Subject');
             foreach($dcSubjects as $dcSubject)
             {
-                if (is_numeric(substr(trim($dcSubject->text), 0, 1)) & !preg_match('/[A-Za-z]/', $dcSubject->text))
+                if (is_numeric(substr(trim($dcSubject->text), 0, 1)) & !preg_match('/[A-Za-z]/', $dcSubject->text)
+                    & !preg_match('/^18/', $dcSubject->text) &  !preg_match('/^19/', $dcSubject->text))
                 {
                     $this->appendNewElement($oai_dc, 
                         'dc:subject', trim($dcSubject->text), 'dcterms:YKL');
@@ -297,7 +298,8 @@ class OaiPmhRepository_Metadata_OaiKdk extends OaiPmhRepository_Metadata_Abstrac
             $dcClassifications = $this->item->getElementTexts('Item Type Metadata','YKL');
             foreach($dcClassifications as $dcClassification)
             {
-                if (is_numeric(substr(trim($dcClassification->text), 0, 1)) & !preg_match('/[A-Za-z]/', $dcClassification->text))
+                if (is_numeric(substr(trim($dcClassification->text), 0, 1)) & !preg_match('/[A-Za-z]/', $dcClassification->text) 
+                    & (substr($dcClassification->text,0,2) != '19') &  (substr($dcClassification->text,0,2) != '18'))
                 {
                     $this->appendNewElement($oai_dc, 
                         'dc:subject', trim($dcClassification->text), 'dcterms:YKL');
