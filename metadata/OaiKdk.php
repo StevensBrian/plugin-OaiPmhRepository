@@ -290,6 +290,13 @@ class OaiPmhRepository_Metadata_OaiKdk extends OaiPmhRepository_Metadata_Abstrac
 
         /* Handle ccmmon Item Type Metadata fields used in Finnish libraries*/
 
+        $db = Zend_Registry::get('bootstrap')->getResource('db');
+        $table = $db->getTable('Element');
+        $alias = $table->getTableAlias();
+        $sql = $table->getSelectForFindBy()->where("`$alias`.`name` = ?");
+        $itemTypeElements = array($db->fetchCol($sql, 'YKL'));
+
+
         $dcClassifications = $this->item->getElementTexts(
                 'Item Type Metadata','YKL');
             foreach($dcClassifications as $dcClassification)
@@ -301,6 +308,8 @@ class OaiPmhRepository_Metadata_OaiKdk extends OaiPmhRepository_Metadata_Abstrac
                 } 
                 
             }
+
+       print_r($itemTypeElements);
 
     }
     
