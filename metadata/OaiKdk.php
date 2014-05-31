@@ -130,17 +130,6 @@ class OaiPmhRepository_Metadata_OaiKdk extends OaiPmhRepository_Metadata_Abstrac
                 }
             }
         }
-        /* 
-         * Retrieve subject headings which are saved as tags.
-         */
-
-        $tags = $this->item->getTags();
-        foreach($tags as $tag)
-        {
-        
-        $this->appendNewElement($oai_dc, 
-                            'dc:subject', $tag->name, 'dcterms:DDC');
-        }
 
         /* Handle UDC/YKL entries separately */
 
@@ -148,10 +137,10 @@ class OaiPmhRepository_Metadata_OaiKdk extends OaiPmhRepository_Metadata_Abstrac
                 'Dublin Core','Subject');
             foreach($dcSubjects as $dcSubject)
             {
-                if (is_numeric(substr(trim($dcSubject->text), 0, 1)))
+                if (is_numeric(substr(trim($dcSubject->text), 0, 1)) & !preg_match('/[A-Za-z]/', $dcSubject->text))
                 {
                     $this->appendNewElement($oai_dc, 
-                        'dc:subject', trim($dcSubject->text), 'dcterms:UDC');
+                        'dc:subject', trim($dcSubject->text), 'dcterms:YKL');
                 }
                 else {
                     
@@ -281,6 +270,20 @@ class OaiPmhRepository_Metadata_OaiKdk extends OaiPmhRepository_Metadata_Abstrac
                 {
                     $this->appendNewElement($oai_dc, 
                         'dcterms:' . $key, $elementText->text);
+                }
+            }
+        }
+
+
+        // Expose thumbnails if requested
+        if(get_option('oaipmh_repository_expose_files')) {
+            $files = $this->item->getFiles();
+            
+            foreach($files as $file) 
+            {
+                if($file->hasThumbnail()) {
+                $this->appendNewElement($oai_dc, 
+                    'dc:identifier', $file->getWebPath('fullsize'),'file');
                 }
             }
         }
