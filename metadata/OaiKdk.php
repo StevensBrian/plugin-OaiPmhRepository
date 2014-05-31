@@ -237,7 +237,7 @@ class OaiPmhRepository_Metadata_OaiKdk extends OaiPmhRepository_Metadata_Abstrac
          if(empty($dcTypes))
              {
                  $it = $this->item->getItemType();
-                 $itemtype = $it->name;
+                 $itemtype = $item->name;
                  $this->appendNewElement($oai_dc, 
                             'dc:type', $this->translateItemType(strtolower(trim($itemtype)))); 
                               }
