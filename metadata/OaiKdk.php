@@ -170,10 +170,10 @@ class OaiPmhRepository_Metadata_OaiKdk extends OaiPmhRepository_Metadata_Abstrac
                     switch($dcLanguage->text)
                     {
                         case 'suomi':
-                            $language = 'fi';
+                            $language = 'fin';
                             break;
                         case 'englanti':
-                            $language = 'en';
+                            $language = 'eng';
                             break;
                         case 'ruotsi':
                             $language = 'sv';
@@ -287,6 +287,21 @@ class OaiPmhRepository_Metadata_OaiKdk extends OaiPmhRepository_Metadata_Abstrac
                 }
             }
         }
+
+        /* Handle ccmmon Item Type Metadata fields used in Finnish libraries*/
+
+        $dcClassifications = $this->item->getElementTexts(
+                'Item Type Metadata','YKL');
+            foreach($dcClassifications as $dcClassification)
+            {
+                if (is_numeric(substr(trim($dcClassification->text), 0, 1)) & !preg_match('/[A-Za-z]/', $dcClassification->text))
+                {
+                    $this->appendNewElement($oai_dc, 
+                        'dc:subject', trim($dcClassification->text), 'dcterms:YKL');
+                } 
+                
+            }
+
     }
     
     /**
