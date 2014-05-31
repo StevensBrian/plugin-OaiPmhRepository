@@ -309,7 +309,7 @@ class OaiPmhRepository_Metadata_OaiKdk extends OaiPmhRepository_Metadata_Abstrac
                 
             }
 
-       print_r($itemTypeElements);
+       //print_r($itemTypeElements);:)
 
     }
     
