@@ -33,6 +33,7 @@ class OaiPmhRepository_Metadata_OaiKdk extends OaiPmhRepository_Metadata_Abstrac
 
     /** XML namepace for DC element refinements*/
     const DC_TERM_NAMESPACE_URI = 'http://purl.org/dc/terms/';
+
     
     /**
      * Appends Dublin Core metadata. 
@@ -283,22 +284,17 @@ class OaiPmhRepository_Metadata_OaiKdk extends OaiPmhRepository_Metadata_Abstrac
             {
                 if($file->hasThumbnail()) {
                 $this->appendNewElement($oai_dc, 
-                    'dc:identifier', $file->getWebPath('fullsize'),'file');
+                    'dc:identifier', $file->getWebPath('thumbnail'),'file');
                 }
             }
         }
 
-        /* Handle ccmmon Item Type Metadata fields used in Finnish libraries*/
+        /* Handle some of the Item Type Metadata fields used in Finnish libraries*/
 
-        $db = Zend_Registry::get('bootstrap')->getResource('db');
-        $table = $db->getTable('Element');
-        $alias = $table->getTableAlias();
-        $sql = $table->getSelectForFindBy()->where("`$alias`.`name` = ?");
-        $itemTypeElements = array($db->fetchCol($sql, 'YKL'));
+        $itemTypeFields = $this->availableItemtypeFields();
 
-
-        $dcClassifications = $this->item->getElementTexts(
-                'Item Type Metadata','YKL');
+        if (in_array("YKL", $itemTypeFields)) {
+            $dcClassifications = $this->item->getElementTexts('Item Type Metadata','YKL');
             foreach($dcClassifications as $dcClassification)
             {
                 if (is_numeric(substr(trim($dcClassification->text), 0, 1)) & !preg_match('/[A-Za-z]/', $dcClassification->text))
@@ -308,10 +304,82 @@ class OaiPmhRepository_Metadata_OaiKdk extends OaiPmhRepository_Metadata_Abstrac
                 } 
                 
             }
+        }
+        if (in_array("Henkilö", $itemTypeFields)) {
+            $dcPersonSubjects = $this->item->getElementTexts('Item Type Metadata','Henkilö');
+            foreach($dcPersonSubjects as $dcPersonSubject)
+            {
+                $this->appendNewElement($oai_dc, 'dc:subject', trim($dcPersonSubject->text)); 
+                            
+            }
+        }
+        if (in_array("Aikamääre", $itemTypeFields)) {
+            $dcEDTFDates = $this->item->getElementTexts('Item Type Metadata','Aikamääre');
+                foreach($dcEDTFDates as $dcEDTFDate)
+                {
+                    $this->appendNewElement($oai_dc,'dcterms:created', trim($dcEDTFDate->text), 'dcterms:EDTF'); 
+                    
+                }
+        }
 
-       //print_r($itemTypeElements);:)
+        if (in_array("Porstua-luokka", $itemTypeFields)) {
+            $dcSubjects = $this->item->getElementTexts('Item Type Metadata','Porstua-luokka');
+                foreach($dcSubjects as $dcSubject)
+                {
+                    $this->appendNewElement($oai_dc,'dc:description', trim($dcSubject->text), 'dcterms:porstua'); 
+                    
+                }
+        }
+
+        if (in_array("Porstua-alaluokka", $itemTypeFields)) {
+            $dcSubjects = $this->item->getElementTexts('Item Type Metadata','Porstua-alaluokka');
+                foreach($dcSubjects as $dcSubject)
+                {
+                    $this->appendNewElement($oai_dc,'dc:description', trim($dcSubject->text), 'dcterms:porstua'); 
+                    
+                }
+        }
+
+        if (in_array("Lehden nimi", $itemTypeFields)) {
+            $dcCitations = $this->item->getElementTexts('Item Type Metadata','Lehden nimi');
+                foreach($dcCitations as $dcCitation)
+                {
+                    $this->appendNewElement($oai_dc,'dcterms:bibliographicCitation', trim($dcCitation->text)); 
+                    
+                }
+        }
+
+        if (in_array("Aineistoryhmä", $itemTypeFields)) {
+            $dcSubjects = $this->item->getElementTexts('Item Type Metadata','Aineistoryhmä');
+                foreach($dcSubjects as $dcSubject)
+                {
+                    $this->appendNewElement($oai_dc,'dc:description', trim($dcSubject->text), 'dcterms:kirjastovirma'); 
+                    
+                }
+        }
+
+        if (in_array("Aihekokonaisuus", $itemTypeFields)) {
+            $dcSubjects = $this->item->getElementTexts('Item Type Metadata','Aihekokonaisuus');
+                foreach($dcSubjects as $dcSubject)
+                {
+                    $this->appendNewElement($oai_dc,'dc:description', trim($dcSubject->text), 'dcterms:kirjastovirma'); 
+                    
+                }
+        }
+
+        if (in_array("Paikka", $itemTypeFields)) {
+            $dcLocations = $this->item->getElementTexts('Item Type Metadata','Paikka');
+                foreach($dcLocations as $dcLocation)
+                {
+                    $this->appendNewElement($oai_dc,'dcterms:coverage', trim($dcLocation->text)); 
+                    
+                }
+        }
+
+
 
     }
+        
     
     /**
      * Returns the OAI-PMH metadata prefix for the output format.
@@ -403,6 +471,23 @@ class OaiPmhRepository_Metadata_OaiKdk extends OaiPmhRepository_Metadata_Abstrac
                            $itemtype = $itemtype;
                     }
             return $itemtype;
+    }
+
+    protected function availableItemtypeFields()
+    {
+        $db = Zend_Registry::get('bootstrap')->getResource('db');
+        $table = $db->getTable('Element');
+        $select = $table->getSelect();
+        $itemTypeElementsAvailable = $db->fetchAll($select);
+        $elementNames = array();
+        foreach($itemTypeElementsAvailable as $key => $value)
+        {   
+            array_push($elementNames,$itemTypeElementsAvailable[$key]['name']);
+
+        }
+    
+        return $elementNames;
+
     }
 }
 
