@@ -235,26 +235,27 @@ class OaiPmhRepository_Metadata_OaiKdk extends OaiPmhRepository_Metadata_Abstrac
         /* Handle itemtype if empty in metadata */
         
         $dcTypes = $this->item->getElementTexts('Dublin Core', 'Type');
-        
-         if(empty($dcTypes))
-             {
-                 $itemType = $this->item->getItemType();
+        $itemType = $this->item->getItemType();
+
+        if(empty($dcTypes) & $itemType)
+            {
                  $itemTypeName = $itemType->name;
                  $this->appendNewElement($oai_dc, 
                             'dc:type', $this->translateItemType(strtolower(trim($itemTypeName)))); 
-                              }
+            }
         else
         {   
          foreach($dcTypes as $dcType)
-         {
+            {
                  if($dcType->text)
                  {
-                     $itemtype = $dcType->text;    
+                     $itemtype = $dcType->text; 
+                     $this->appendNewElement($oai_dc, 
+                            'dc:type', $this->translateItemType(strtolower(trim($itemtype))));   
                  }
          
-         $this->appendNewElement($oai_dc, 
-                            'dc:type', $this->translateItemType(strtolower(trim($itemtype)))); 
-         }
+         
+            }
         }
             
         
@@ -469,9 +470,16 @@ class OaiPmhRepository_Metadata_OaiKdk extends OaiPmhRepository_Metadata_Abstrac
                         case 'käsikirjoitus':
                             $itemtype = 'Text';
                             break;
+                        case 'rakennuspiirustus':
+                            $itemtype = 'Image';
+                            break;
+                        case 'kuva':
+                            $itemtype = 'Image';
+                            break;
                         default:
-                           $itemtype = $itemtype;
+                           $itemtype = 'Text';
                     }
+                    
             return $itemtype;
     }
 
