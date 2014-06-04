@@ -237,7 +237,7 @@ class OaiPmhRepository_Metadata_OaiKdk extends OaiPmhRepository_Metadata_Abstrac
         $dcTypes = $this->item->getElementTexts('Dublin Core', 'Type');
         $itemType = $this->item->getItemType();
 
-        if(empty($dcTypes) & $itemType)
+        if(empty($dcTypes) & !empty($itemType))
             {
                  $itemTypeName = $itemType->name;
                  $this->appendNewElement($oai_dc, 
