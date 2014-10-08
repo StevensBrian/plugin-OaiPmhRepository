@@ -278,7 +278,7 @@ class OaiPmhRepository_Metadata_OaiKdk extends OaiPmhRepository_Metadata_Abstrac
         }
 
 
-        // Expose thumbnails if requested
+        // Expose files if requested
         if(get_option('oaipmh_repository_expose_files')) {
             $files = $this->item->getFiles();
             
@@ -286,8 +286,10 @@ class OaiPmhRepository_Metadata_OaiKdk extends OaiPmhRepository_Metadata_Abstrac
             {
                 if($file->hasThumbnail()) {
                 $this->appendNewElement($oai_dc, 
-                    'dc:identifier', $file->getWebPath('thumbnail'),'file');
+                    'dc:identifier', $file->getWebPath('thumbnail'),'thumbnail');
                 }
+                $this->appendNewElement($oai_dc, 
+                    'dc:identifier', $file->getWebPath('original'),'original');
             }
         }
 
