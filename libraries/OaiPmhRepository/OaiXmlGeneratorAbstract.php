@@ -2,12 +2,9 @@
 /**
  * @package OaiPmhRepository
  * @subpackage Libraries
- * @author John Flatness, Yu-Hsun Lin
- * @copyright Copyright 2009 John Flatness, Yu-Hsun Lin
+ * @copyright Copyright 2009-2014 John Flatness, Yu-Hsun Lin
  * @license http://www.gnu.org/licenses/gpl-3.0.txt
  */
-
-require_once 'XmlGeneratorAbstract.php';
 
 /**
  * Abstract class containing functions for tasks common to all OAI-PMH
@@ -16,8 +13,8 @@ require_once 'XmlGeneratorAbstract.php';
  * @package OaiPmhRepository
  * @subpackage Libraries
  */
-class OaiPmhRepository_OaiXmlGeneratorAbstract extends OaiPmhRepository_XmlGeneratorAbstract {
-    
+class OaiPmhRepository_OaiXmlGeneratorAbstract
+{
     // =========================
     // General OAI-PMH constants
     // =========================
@@ -43,18 +40,17 @@ class OaiPmhRepository_OaiXmlGeneratorAbstract extends OaiPmhRepository_XmlGener
     // Date/time constants
     // =========================
     
-    const OAI_DATE_PCRE     = "/^\\d{4}\\-\\d{2}\\-\\d{2}$/";
-    const OAI_DATETIME_PCRE = "/^\\d{4}\\-\\d{2}\\-\\d{2}T\\d{2}\\:\\d{2}\\:\\d{2}Z$/";
-    
-    const OAI_GRANULARITY_STRING   = 'YYYY-MM-DDThh:mm:ssZ';
-    const OAI_GRANULARITY_DATE     = 1;
-    const OAI_GRANULARITY_DATETIME = 2;
-    
     /**
      * Flags if an error has occurred during the response.
      * @var bool
      */
     protected $error;
+
+    /**
+     * The XML document being generated.
+     * @var DOMDocument
+     */
+    protected $document;
     
     /**
      * Throws an OAI-PMH error on the given response.
@@ -71,19 +67,12 @@ class OaiPmhRepository_OaiXmlGeneratorAbstract extends OaiPmhRepository_XmlGener
     }
     
     /**
-     * Returns the granularity of the given utcDateTime string.  Returns zero
-     * if the given string is not in utcDateTime format.
+     * Get the DOMDocument for this generator.
      *
-     * @param string $dateTime Time string
-     * @return int OAI_GRANULARITY_DATE, OAI_GRANULARITY_DATETIME, or zero
+     * @return DOMDocument
      */
-    static function getGranularity($dateTime)
+    public function getDocument()
     {
-        if(preg_match(self::OAI_DATE_PCRE, $dateTime))
-            return self::OAI_GRANULARITY_DATE;
-        else if(preg_match(self::OAI_DATETIME_PCRE, $dateTime))
-            return self::OAI_GRANULARITY_DATETIME;
-        else 
-            return false;
+        return $this->document;
     }
 }

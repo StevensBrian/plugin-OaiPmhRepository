@@ -2,14 +2,9 @@
 /**
  * @package OaiPmhRepository
  * @subpackage Libraries
- * @author John Flatness, Yu-Hsun Lin
- * @copyright Copyright 2009 John Flatness, Yu-Hsun Lin
+ * @copyright Copyright 2009-2014 John Flatness, Yu-Hsun Lin
  * @license http://www.gnu.org/licenses/gpl-3.0.txt
  */
- 
-require_once 'OaiXmlGeneratorAbstract.php';
-require_once 'OaiIdentifier.php';
-require_once 'Metadata/Abstract.php';
 
 /**
  * OaiPmhRepository_ResponseGenerator generates the XML responses to OAI-PMH
@@ -54,6 +49,8 @@ class OaiPmhRepository_ResponseGenerator extends OaiPmhRepository_OaiXmlGenerato
         $this->error = false;
         $this->query = $query;
         $this->document = new DomDocument('1.0', 'UTF-8');
+        $this->document->registerNodeClass('DOMElement',
+            'OaiPmhRepository_DOMElement');
         
         OaiPmhRepository_OaiIdentifier::initializeNamespace(get_option('oaipmh_repository_namespace_id'));
         
@@ -66,8 +63,7 @@ class OaiPmhRepository_ResponseGenerator extends OaiPmhRepository_OaiXmlGenerato
             'OAI-PMH');
         $this->document->appendChild($root);
         
-        $root->setAttributeNS(self::XML_SCHEMA_NAMESPACE_URI, 'xsi:schemaLocation',
-            self::OAI_PMH_NAMESPACE_URI.' '.self::OAI_PMH_SCHEMA_URI);
+        $root->declareSchemaLocation(self::OAI_PMH_NAMESPACE_URI, self::OAI_PMH_SCHEMA_URI);
     
         $responseDate = $this->document->createElement('responseDate', 
             OaiPmhRepository_Date::unixToUtc(time()));
@@ -188,8 +184,8 @@ class OaiPmhRepository_ResponseGenerator extends OaiPmhRepository_OaiXmlGenerato
         $from = $this->_getParam('from');
         $until = $this->_getParam('until');
         
-        $fromGran = self::getGranularity($from);
-        $untilGran = self::getGranularity($until);
+        $fromGran = OaiPmhRepository_Date::getGranularity($from);
+        $untilGran = OaiPmhRepository_Date::getGranularity($until);
         
         if($from && !$fromGran)
             $this->throwError(self::OAI_ERR_BAD_ARGUMENT, "Invalid date/time argument.");
@@ -224,9 +220,10 @@ class OaiPmhRepository_ResponseGenerator extends OaiPmhRepository_OaiXmlGenerato
             'adminEmail'        => get_option('administrator_email'),
             'earliestDatestamp' => OaiPmhRepository_Date::unixToUtc(0),
             'deletedRecord'     => 'no',
-            'granularity'       => self::OAI_GRANULARITY_STRING);
-        $identify = $this->createElementWithChildren(
-            $this->document->documentElement, 'Identify', $elements);
+            'granularity'       => OaiPmhRepository_Date::OAI_GRANULARITY_STRING
+        );
+        $identify = $this->document->documentElement->appendNewElementWithChildren(
+            'Identify', $elements);
 
         // Publish support for compression, if appropriate
         // This defers to compression set in Omeka's paths.php
@@ -240,32 +237,8 @@ class OaiPmhRepository_ResponseGenerator extends OaiPmhRepository_OaiXmlGenerato
         $description = $this->document->createElement('description');
         $identify->appendChild($description);
         OaiPmhRepository_OaiIdentifier::describeIdentifier($description);
-        
-        $toolkitDescription = $this->document->createElement('description');
-        $identify->appendChild($toolkitDescription);
-        $this->describeToolkit($toolkitDescription);
     }
-    
-    private function describeToolkit($parentElement)
-    {
-        $toolkitNamespace = 'http://oai.dlib.vt.edu/OAI/metadata/toolkit';
-        $toolkitSchema = 'http://oai.dlib.vt.edu/OAI/metadata/toolkit.xsd';
-        $version = get_db()->getTable('Plugin')->findByDirectoryName('OaiPmhRepository')->getDbVersion();
-        
-        $elements = array(
-            'title' => 'Omeka OAI-PMH Repository Plugin',
-            'author' => array(
-                'name' => 'John Flatness',
-                'email' => 'john@zerocrates.org'
-                ),
-            'version' => $version,
-            'URL' => 'http://omeka.org/codex/Plugins/OaiPmhRepository'
-            );
-        $toolkit = $this->createElementWithChildren($parentElement, 'toolkit', $elements);
-        $toolkit->setAttribute('xsi:schemaLocation', "$toolkitNamespace $toolkitSchema");
-        $toolkit->setAttribute('xmlns', $toolkitNamespace);
-    }
-    
+
     /**
      * Responds to the GetRecord verb.
      *
@@ -284,23 +257,16 @@ class OaiPmhRepository_ResponseGenerator extends OaiPmhRepository_OaiXmlGenerato
             return;
         }
         
-        if (!$metadataPrefix) {
-            $this->throwError(self::OAI_ERR_BAD_ARGUMENT, 'Missing required metadataPrefix argument');
-            return;
-        }
-        
         $item = get_db()->getTable('Item')->find($itemId);
 
         if(!$item) {
             $this->throwError(self::OAI_ERR_ID_DOES_NOT_EXIST);
         }
-        
 
         if(!$this->error) {
-            $getRecord = $this->document->createElement('GetRecord');
-            $this->document->documentElement->appendChild($getRecord);
-            $record = new $this->metadataFormats[$metadataPrefix]($item, $this->document);
-            $record->appendRecord($getRecord);
+            $verbElement = $this->document->createElement('GetRecord');
+            $this->document->documentElement->appendChild($verbElement);
+            $this->appendRecord($verbElement, $item, $metadataPrefix);
         }
     }
     
@@ -327,9 +293,13 @@ class OaiPmhRepository_ResponseGenerator extends OaiPmhRepository_OaiXmlGenerato
         if(!$this->error) {
             $listMetadataFormats = $this->document->createElement('ListMetadataFormats');
             $this->document->documentElement->appendChild($listMetadataFormats);
-            foreach($this->metadataFormats as $format) {
-                $formatObject = new $format(null, $this->document);
-                $formatObject->declareMetadataFormat($listMetadataFormats);
+            foreach($this->metadataFormats as $prefix => $format) {
+                $elements = array(
+                    'metadataPrefix' => $prefix,
+                    'schema' => $format['schema'],
+                    'metadataNamespace' => $format['namespace']
+                );
+                $listMetadataFormats->appendNewElementWithChildren('metadataFormat', $elements);
             }
         }
     }
@@ -343,8 +313,21 @@ class OaiPmhRepository_ResponseGenerator extends OaiPmhRepository_OaiXmlGenerato
      */
     private function listSets()
     {
-        $collections = get_db()->getTable('Collection')->findAll();
-        
+        $db = get_db();
+        if ((boolean) get_option('oaipmh_repository_expose_empty_collections')) {
+            $collections = $db->getTable('Collection')->findAll();
+        }
+        else {
+            $select = new Omeka_Db_Select();
+            $select
+                ->from(array('collections' => $db->Collection))
+                ->joinInner(array('items' => $db->Item), 'collections.id = items.collection_id', array())
+                ->where('collections.public = 1')
+                ->where('items.public = 1')
+                ->group('collections.id');
+            $collections = get_db()->getTable('Collection')->fetchObjects($select);
+        }
+
         if(count($collections) == 0)
             $this->throwError(self::OAI_ERR_NO_SET_HIERARCHY);
             
@@ -355,7 +338,7 @@ class OaiPmhRepository_ResponseGenerator extends OaiPmhRepository_OaiXmlGenerato
             foreach ($collections as $collection) {
                 $elements = array( 'setSpec' => $collection->id,
                                    'setName' => metadata($collection,array('Dublin Core','Title')));
-                $this->createElementWithChildren($listSets, 'set', $elements);
+                $listSets->appendNewElementWithChildren('set', $elements);
             }
         }
     }
@@ -376,7 +359,7 @@ class OaiPmhRepository_ResponseGenerator extends OaiPmhRepository_OaiXmlGenerato
         if(($from = $this->_getParam('from')))
             $fromDate = OaiPmhRepository_Date::utcToDb($from);
         if(($until= $this->_getParam('until')))
-            $untilDate = OaiPmhRepository_Date::utcToDb($until);
+            $untilDate = OaiPmhRepository_Date::utcToDb($until, true);
         
         $this->listResponse($this->query['verb'], 
                             $this->query['metadataPrefix'],
@@ -425,23 +408,33 @@ class OaiPmhRepository_ResponseGenerator extends OaiPmhRepository_OaiXmlGenerato
     private function listResponse($verb, $metadataPrefix, $cursor, $set, $from, $until) {
         $listLimit = $this->_listLimit;
         
-        $itemTable = get_db()->getTable('Item');
+        $db = get_db();
+        $itemTable = $db->getTable('Item');
         $select = $itemTable->getSelect();
         $alias = $itemTable->getTableAlias();
         $itemTable->filterByPublic($select, true);
         if($set)
             $itemTable->filterByCollection($select, $set);
+
+        $modifiedClause = $addedClause = '';
         if($from) {
-            $select->where("$alias.modified >= ? OR $alias.added >= ?", $from);
-            $select->group("$alias.id");
+            $quotedFromDate = $db->quote($from);
+            $modifiedClause = "$alias.modified >= $quotedFromDate";
+            $addedClause = "$alias.added >= $quotedFromDate";
         }
         if($until) {
-            $select->where("$alias.modified <= ? OR $alias.added <= ?", $until);
-            $select->group("$alias.id");
+            if ($from) {
+                $modifiedClause .= ' AND ';
+                $addedClause .= ' AND ';
+            }
+            $quotedUntilDate = $db->quote($until);
+            $modifiedClause .= "$alias.modified < $quotedUntilDate";
+            $addedClause .= "$alias.added < $quotedUntilDate";
         }
-        if (!$metadataPrefix) {
-            $this->throwError(self::OAI_ERR_BAD_ARGUMENT, 'Missing required metadataPrefix argument');
-            return;
+
+
+        if ($from || $until) {
+            $select->where("($modifiedClause) OR ($addedClause)");
         }
         
         // Total number of rows that would be returned
@@ -455,18 +448,18 @@ class OaiPmhRepository_ResponseGenerator extends OaiPmhRepository_OaiXmlGenerato
             $this->throwError(self::OAI_ERR_NO_RECORDS_MATCH, 'No records match the given criteria');
 
         else {
-            if($verb == 'ListIdentifiers')
-                $method = 'appendHeader';
-            else if($verb == 'ListRecords')
-                $method = 'appendRecord';
+
             
             $verbElement = $this->document->createElement($verb);
             $this->document->documentElement->appendChild($verbElement);
             foreach($items as $item) {
-                $record = new $this->metadataFormats[$metadataPrefix]($item, $this->document);
-                $record->$method($verbElement);
+                if($verb == 'ListIdentifiers')
+                    $this->appendHeader($verbElement, $item);
+                else if($verb == 'ListRecords')
+                    $this->appendRecord($verbElement, $item, $metadataPrefix);
+                
                 // Drop Item from memory explicitly
-                release_object($this->item);
+                release_object($item);
             }
             if($rows > ($cursor + $listLimit)) {
                 $token = $this->createResumptionToken($verb,
@@ -488,6 +481,54 @@ class OaiPmhRepository_ResponseGenerator extends OaiPmhRepository_OaiXmlGenerato
                 $verbElement->appendChild($tokenElement);
             }
         }
+    }
+    
+    /**
+     * Appends the record's header to the XML response.
+     *
+     * Adds the identifier, datestamp and setSpec to a header element, and
+     * appends in to the document.
+     *
+     * @param DOMElement $parentElement
+     * @param Item $item
+     */
+    public function appendHeader($parentElement, $item)
+    {
+        $headerData['identifier'] = 
+            OaiPmhRepository_OaiIdentifier::itemToOaiId($item->id);
+        $headerData['datestamp'] = OaiPmhRepository_Date::dbToUtc($item->modified);
+        
+        $collectionId = $item->collection_id;
+        if ($collectionId)
+            $headerData['setSpec'] = $collectionId;
+        
+        $parentElement->appendNewElementWithChildren('header', $headerData);
+    }
+    
+    /**
+     * Appends the record to the XML response.
+     *
+     * Adds both the header and metadata elements as children of a record
+     * element, which is appended to the document.
+     *
+     * @uses appendHeader
+     * @uses OaiPmhRepository_Metadata_Interface::appendMetadata
+     * @param DOMElement $parentElement
+     * @param Item $item
+     * @param string $metdataPrefix
+     */
+    public function appendRecord($parentElement, $item, $metadataPrefix)
+    {
+        $record = $this->document->createElement('record');
+        $parentElement->appendChild($record);
+        $this->appendHeader($record, $item);
+        
+        $metadata = $this->document->createElement('metadata');
+        $record->appendChild($metadata);
+        
+        $formatClass = $this->metadataFormats[$metadataPrefix]['class'];
+        $format = new $formatClass;
+        $format->appendMetadata($item, $metadata);
     }
         
     /**
@@ -531,22 +572,40 @@ class OaiPmhRepository_ResponseGenerator extends OaiPmhRepository_OaiXmlGenerato
      */
     private function getFormats()
     {
-        $dir = new DirectoryIterator(OAI_PMH_REPOSITORY_METADATA_DIRECTORY);
-        $metadataFormats = array();
-        foreach ($dir as $dirEntry) {
-            if ($dirEntry->isFile() && !$dirEntry->isDot()) {
-                $filename = $dirEntry->getFilename();
-                $pathname = $dirEntry->getPathname();
-                // Check for all PHP files, ignore the abstract class
-                if(preg_match('/^(.+)\.php$/', $filename, $match)) {
-                    require_once($pathname);
-                    $class = "OaiPmhRepository_Metadata_${match[1]}";
-                    $object = new $class;
-                    $metadataFormats[$object->getMetadataPrefix()] = $class;
-                }
-            }
-        }
-        return $metadataFormats;
+        $formats = array(
+            'oai_dc' => array(
+                'class' => 'OaiPmhRepository_Metadata_OaiDc',
+                'namespace' => OaiPmhRepository_Metadata_OaiDc::METADATA_NAMESPACE,
+                'schema' => OaiPmhRepository_Metadata_OaiDc::METADATA_SCHEMA
+            ),
+            'cdwalite' => array(
+                'class' => 'OaiPmhRepository_Metadata_CdwaLite',
+                'namespace' => OaiPmhRepository_Metadata_CdwaLite::METADATA_NAMESPACE,
+                'schema' => OaiPmhRepository_Metadata_CdwaLite::METADATA_SCHEMA
+            ),
+            'mets' => array(
+                'class' => 'OaiPmhRepository_Metadata_Mets',
+                'namespace' => OaiPmhRepository_Metadata_Mets::METADATA_NAMESPACE,
+                'schema' => OaiPmhRepository_Metadata_Mets::METADATA_SCHEMA
+            ),
+            'mods' => array(
+                'class' => 'OaiPmhRepository_Metadata_Mods',
+                'namespace' => OaiPmhRepository_Metadata_Mods::METADATA_NAMESPACE,
+                'schema' => OaiPmhRepository_Metadata_Mods::METADATA_SCHEMA
+            ),
+            'omeka-xml' => array(
+                'class' => 'OaiPmhRepository_Metadata_OmekaXml',
+                'namespace' => Omeka_Output_OmekaXml_AbstractOmekaXml::XMLNS,
+                'schema' => Omeka_Output_OmekaXml_AbstractOmekaXml::XMLNS_SCHEMALOCATION
+            ),
+            'rdf' => array(
+                'class' => 'OaiPmhRepository_Metadata_Rdf',
+                'namespace' => OaiPmhRepository_Metadata_Rdf::METADATA_NAMESPACE,
+                'schema' => OaiPmhRepository_Metadata_Rdf::METADATA_SCHEMA
+            )
+            
+        );
+        return apply_filters('oai_pmh_repository_metadata_formats', $formats);
     }
     
     private function _getParam($param) {
